@@ -1,6 +1,6 @@
 # Retail Sales & Customer Intelligence Platform
 
-**🔗 Live dashboard:** [chauhansonam338-source.github.io/your-repo-name](https://chauhansonam338-source.github.io/retail_analytics_project/dashboard.html)
+**🔗 Live dashboard:** [https://chauhansonam338-source.github.io/retail_analytics_project/dashboard.html](https://chauhansonam338-source.github.io/retail_analytics_project/dashboard.html)
 
 An end-to-end analytics project: data engineering → exploratory analysis → customer segmentation → cohort retention → machine learning (churn prediction) → interactive dashboard.
 
