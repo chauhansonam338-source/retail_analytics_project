@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Ledger — Retail Intelligence Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg-void:#0A0D14;
+    --bg-panel:#12161F;
+    --bg-panel-raised:#171C27;
+    --line:#232937;
+    --gold:#E3A857;
+    --gold-dim:#8A6A3C;
+    --teal:#3FBFAD;
+    --red:#E1615A;
+    --text-hi:#EDEFF4;
+    --text-mid:#9AA2B4;
+    --text-low:#5C6478;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Sora', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg-void);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    line-height:1.5;
+    padding:0 0 60px 0;
+  }
+  ::selection{background:var(--gold); color:#0A0D14;}
+
+  /* ---- Ticker header ---- */
+  .ticker-wrap{
+    background:var(--bg-panel);
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    white-space:nowrap;
+    padding:10px 0;
+  }
+  .ticker{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:0.02em;
+    color:var(--text-mid);
+    animation: scroll-left 32s linear infinite;
+  }
+  .ticker span{ margin-right:48px; }
+  .ticker .up{ color:var(--teal); }
+  .ticker .down{ color:var(--red); }
+  @keyframes scroll-left{
+    0%{ transform:translateX(0); }
+    100%{ transform:translateX(-50%); }
+  }
+
+  /* ---- Hero ---- */
+  .hero{
+    max-width:1240px;
+    margin:0 auto;
+    padding:56px 32px 32px 32px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--gold);
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px; height:7px;
+    background:var(--teal);
+    border-radius:50%;
+    display:inline-block;
+    box-shadow:0 0 0 3px rgba(63,191,173,0.15);
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(28px, 4vw, 44px);
+    letter-spacing:-0.02em;
+    color:var(--text-hi);
+    max-width:760px;
+  }
+  .hero-sub{
+    color:var(--text-mid);
+    max-width:620px;
+    margin-top:14px;
+    font-size:15px;
+  }
+
+  .kpi-row{
+    max-width:1240px;
+    margin:0 auto;
+    padding:28px 32px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .kpi{
+    background:var(--bg-panel);
+    padding:22px 24px;
+    position:relative;
+  }
+  .kpi::before{
+    content: attr(data-idx);
+    position:absolute; top:16px; right:20px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-low);
+  }
+  .kpi-label{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-mid);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-bottom:10px;
+  }
+  .kpi-value{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:28px;
+    color:var(--text-hi);
+  }
+  .kpi-value.gold{ color:var(--gold); }
+  .kpi-note{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--teal);
+    margin-top:8px;
+  }
+
+  main{ max-width:1240px; margin:0 auto; padding:0 32px; }
+
+  .section{ padding:44px 0; border-bottom:1px solid var(--line); }
+  .section:last-child{ border-bottom:none; }
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:20px; flex-wrap:wrap; gap:8px;
+  }
+  .section-num{
+    font-family:var(--mono); color:var(--gold-dim); font-size:13px; margin-right:10px;
+  }
+  .section-title{
+    font-family:var(--display); font-weight:600; font-size:20px; display:inline;
+  }
+  .section-desc{ color:var(--text-mid); font-size:13.5px; max-width:520px; }
+
+  .panel-grid{ display:grid; gap:16px; }
+  .cols-2{ grid-template-columns:1fr 1fr; }
+  .cols-3{ grid-template-columns:1.3fr 1fr 1fr; }
+  @media (max-width:900px){ .cols-2, .cols-3{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    padding:20px;
+  }
+  .panel-title{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-mid);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:14px;
+    display:flex; justify-content:space-between;
+  }
+  .panel canvas{ max-height:280px; }
+
+  /* Cohort heatmap */
+  .heatmap-table{ width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11.5px; }
+  .heatmap-table th{ color:var(--text-mid); font-weight:500; padding:6px 4px; text-align:center; }
+  .heatmap-table td{ text-align:center; padding:8px 4px; color:#0A0D14; font-weight:600; }
+  .heatmap-table th:first-child, .heatmap-table td:first-child{ text-align:left; color:var(--text-mid); font-weight:400; padding-right:12px;}
+
+  /* Segment bars */
+  .seg-list{ display:flex; flex-direction:column; gap:10px; }
+  .seg-row{ display:grid; grid-template-columns:130px 1fr 70px; align-items:center; gap:10px; }
+  .seg-name{ font-size:12.5px; color:var(--text-mid); font-family:var(--mono); }
+  .seg-bar-track{ background:var(--bg-panel-raised); height:8px; border-radius:2px; overflow:hidden; }
+  .seg-bar-fill{ height:100%; border-radius:2px; }
+  .seg-val{ font-family:var(--mono); font-size:12px; color:var(--text-hi); text-align:right; }
+
+  /* Model card */
+  .metric-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px;}
+  .metric-box{ background:var(--bg-panel-raised); border:1px solid var(--line); padding:14px 12px; text-align:center;}
+  .metric-box .v{ font-family:var(--display); font-weight:700; font-size:20px; color:var(--gold); }
+  .metric-box .l{ font-family:var(--mono); font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-top:4px; }
+
+  .confusion{ display:grid; grid-template-columns:auto 1fr 1fr; gap:6px; font-family:var(--mono); font-size:12px; align-items:center; }
+  .confusion .lbl{ color:var(--text-mid); font-size:10.5px; }
+  .confusion .cell{ padding:14px; text-align:center; border-radius:2px; font-weight:600; }
+  .confusion .tn{ background:rgba(63,191,173,0.15); color:var(--teal); }
+  .confusion .fp{ background:rgba(225,97,90,0.10); color:var(--red); }
+  .confusion .fn{ background:rgba(225,97,90,0.10); color:var(--red); }
+  .confusion .tp{ background:rgba(63,191,173,0.15); color:var(--teal); }
+
+  footer{
+    max-width:1240px; margin:0 auto; padding:40px 32px 0 32px;
+    font-family:var(--mono); font-size:11.5px; color:var(--text-low);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap"><div class="ticker" id="ticker"></div></div>
+
+<div class="hero">
+  <div class="eyebrow">Live analytics · FY24–FY25</div>
+  <h1>Retail Sales &amp; Customer Intelligence Platform</h1>
+  <p class="hero-sub">End-to-end analytics pipeline across 3,000 customers and 33.7K orders — revenue diagnostics, RFM segmentation, cohort retention, and a churn-prediction model with 0.85 ROC-AUC.</p>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi" data-idx="01"><div class="kpi-label">Total Revenue</div><div class="kpi-value gold" id="k-rev">—</div><div class="kpi-note">FY24–FY25</div></div>
+  <div class="kpi" data-idx="02"><div class="kpi-label">Orders Fulfilled</div><div class="kpi-value" id="k-ord">—</div><div class="kpi-note">33.7K orders</div></div>
+  <div class="kpi" data-idx="03"><div class="kpi-label">Active Customer Base</div><div class="kpi-value" id="k-cust">—</div><div class="kpi-note">across 7 metros</div></div>
+  <div class="kpi" data-idx="04"><div class="kpi-label">Avg. Order Value</div><div class="kpi-value" id="k-aov">—</div><div class="kpi-note">per transaction</div></div>
+</div>
+
+<main>
+
+  <section class="section">
+    <div class="section-head">
+      <div><span class="section-num">01</span><span class="section-title">Revenue &amp; Demand Trends</span></div>
+      <div class="section-desc">Monthly GMV and order volume, showing festive-season demand spikes.</div>
+    </div>
+    <div class="panel-grid cols-2">
+      <div class="panel"><div class="panel-title">Monthly Revenue (₹)</div><canvas id="chartRevenue"></canvas></div>
+      <div class="panel"><div class="panel-title">Monthly Order Count</div><canvas id="chartOrders"></canvas></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div><span class="section-num">02</span><span class="section-title">Category &amp; Regional Mix</span></div>
+      <div class="section-desc">Where revenue and margin actually come from — not the same story.</div>
+    </div>
+    <div class="panel-grid cols-3">
+      <div class="panel"><div class="panel-title">Revenue by Category</div><canvas id="chartCatRev"></canvas></div>
+      <div class="panel"><div class="panel-title">Margin Contribution</div><canvas id="chartCatMargin"></canvas></div>
+      <div class="panel"><div class="panel-title">Revenue by Region</div><canvas id="chartRegion"></canvas></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div><span class="section-num">03</span><span class="section-title">RFM Customer Segmentation</span></div>
+      <div class="section-desc">Recency · Frequency · Monetary scoring splits the base into 6 actionable segments.</div>
+    </div>
+    <div class="panel-grid cols-2">
+      <div class="panel"><div class="panel-title">Customers per Segment</div><canvas id="chartRFM"></canvas></div>
+      <div class="panel">
+        <div class="panel-title">Avg. Lifetime Value by Segment</div>
+        <div class="seg-list" id="segList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div><span class="section-num">04</span><span class="section-title">Cohort Retention</span></div>
+      <div class="section-desc">Repeat-purchase rate of each monthly signup cohort, tracked 6 months out.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Monthly Cohorts — % Still Purchasing</div>
+      <div style="overflow-x:auto;"><table class="heatmap-table" id="cohortTable"></table></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div><span class="section-num">05</span><span class="section-title">Churn Prediction Model</span></div>
+      <div class="section-desc">Random Forest classifier — flags customers likely to go inactive in the next 90 days.</div>
+    </div>
+    <div class="panel">
+      <div class="metric-grid" id="metricGrid"></div>
+      <div class="panel-grid cols-3">
+        <div class="panel" style="border:none; padding:0;"><div class="panel-title">ROC Curve</div><canvas id="chartROC"></canvas></div>
+        <div class="panel" style="border:none; padding:0;"><div class="panel-title">Feature Importance</div><canvas id="chartFeat"></canvas></div>
+        <div class="panel" style="border:none; padding:0;">
+          <div class="panel-title">Confusion Matrix</div>
+          <div class="confusion" id="confMatrix"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Pipeline: pandas · scikit-learn · Random Forest</span>
+  <span>Dataset: 3,000 customers · 63.5K line items · 2024–2025</span>
+</footer>
+
+<script>
+const DATA = {"kpis": {"total_revenue": 735510392.16, "total_orders": 33757, "total_customers": 3000, "avg_order_value": 21788.38}, "monthly_revenue": {"labels": ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025"], "values": [2026721.0, 4814754.0, 9873322.0, 12107846.0, 20198810.0, 20289918.0, 28218658.0, 31079014.0, 31300328.0, 37744949.0, 36679560.0, 35382437.0, 43994194.0, 36629402.0, 46253200.0, 42039519.0, 44246506.0, 39779663.0, 41362697.0, 37714478.0, 34472444.0, 37613052.0, 31970955.0, 29717964.0]}, "monthly_orders": {"labels": ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024", "Jul 2024", "Aug 2024", "Sep 2024", "Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025"], "values": [99, 263, 468, 601, 855, 911, 1200, 1374, 1487, 1649, 1705, 1869, 1975, 1841, 2116, 1929, 1956, 1717, 1740, 1665, 1579, 1622, 1566, 1570]}, "category_revenue": {"labels": ["Electronics", "Home & Kitchen", "Sports & Fitness", "Fashion", "Beauty & Personal Care", "Groceries"], "values": [456857611.0, 107252204.0, 74029094.0, 58754699.0, 27559840.0, 11056944.0]}, "category_margin": {"labels": ["Electronics", "Home & Kitchen", "Fashion", "Sports & Fitness", "Beauty & Personal Care", "Groceries"], "values": [54822913.0, 23595485.0, 20564145.0, 13325237.0, 8267952.0, 884556.0]}, "region_revenue": {"labels": ["Mumbai", "Delhi NCR", "Bengaluru", "Pune", "Hyderabad", "Chennai", "Kolkata"], "values": [171717240.0, 149089744.0, 143034596.0, 89821837.0, 75282339.0, 66539126.0, 40025511.0]}, "rfm_segments": {"labels": ["Champions", "At Risk", "Loyal Customers", "Needs Attention", "New / Promising", "Lost"], "customers": [709, 373, 718, 312, 143, 745], "avg_monetary": [513506.0, 276679.0, 250704.0, 118467.0, 101122.0, 49404.0], "avg_frequency": [22.8, 12.66, 12.14, 4.51, 4.9, 2.74], "avg_recency": [16.6, 327.0, 50.3, 153.2, 21.0, 346.5]}, "cohort_retention": {"cohorts": ["2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "months": [0, 1, 2, 3, 4, 5, 6], "matrix": [[1.0, 1.529, 1.714, 1.614, 1.629, 1.629, 1.671], [1.0, 2.019, 1.944, 2.074, 1.778, 2.074, 2.019], [1.0, 1.895, 1.93, 1.807, 1.649, 1.807, 1.439], [1.0, 2.292, 2.188, 2.229, 2.042, 2.125, 1.979], [1.0, 1.5, 1.5, 1.661, 1.484, 1.5, 1.274], [1.0, 1.906, 1.891, 1.891, 1.531, 1.562, 1.469], [1.0, 1.446, 1.325, 1.241, 1.422, 1.253, 1.301], [1.0, 1.475, 1.388, 1.375, 1.412, 1.138, 1.175], [1.0, 1.613, 1.613, 1.453, 1.387, 1.16, 1.307], [1.0, 1.403, 1.389, 1.306, 1.056, 1.181, 1.208], [1.0, 1.494, 1.646, 1.329, 1.342, 1.101, 1.241], [1.0, 1.403, 1.431, 1.444, 1.139, 1.153, 1.0]]}, "churn": {"metrics": {"accuracy": 0.7667, "precision": 0.7654, "recall": 0.7331, "f1": 0.7489, "roc_auc": 0.8506}, "confusion_matrix": [[314, 80], [95, 261]], "roc_curve": {"fpr": [0.0, 0.0025, 0.0102, 0.0152, 0.0254, 0.033, 0.0406, 0.0457, 0.0508, 0.0609, 0.0685, 0.0761, 0.0863, 0.0914, 0.1041, 0.1142, 0.1345, 0.1421, 0.1574, 0.1802, 0.1878, 0.2005, 0.2132, 0.2234, 0.2335, 0.2386, 0.2563, 0.2716, 0.2868, 0.2944, 0.3096, 0.3299, 0.3401, 0.3553, 0.3985, 0.4391, 0.4721, 0.4873, 0.5025, 0.5152, 0.5431, 0.5761, 0.5964, 0.6345, 0.6548, 0.736, 0.7716, 0.802, 0.8452, 1.0], "tpr": [0.0, 0.1573, 0.2809, 0.3624, 0.3792, 0.4213, 0.4579, 0.4747, 0.5056, 0.5225, 0.5506, 0.5787, 0.5927, 0.6011, 0.6152, 0.6348, 0.6404, 0.6657, 0.6713, 0.6994, 0.7219, 0.7303, 0.7388, 0.75, 0.7612, 0.7781, 0.7865, 0.8006, 0.8146, 0.8287, 0.8343, 0.8399, 0.8483, 0.8567, 0.8792, 0.8848, 0.8933, 0.8989, 0.9045, 0.9185, 0.9242, 0.9354, 0.9466, 0.9522, 0.9635, 0.9691, 0.9775, 0.9831, 0.9944, 1.0]}, "feature_importance": {"labels": ["frequency", "monetary", "avg_discount_used", "avg_order_value", "tenure_days", "distinct_categories", "region_enc"], "values": [0.326, 0.2731, 0.1624, 0.091, 0.0853, 0.0382, 0.024]}, "churn_rate_overall": 0.4747, "n_eligible": 3000}};
+
+const fmtINR = (n) => {
+  if (n >= 1e7) return '₹' + (n/1e7).toFixed(2) + 'Cr';
+  if (n >= 1e5) return '₹' + (n/1e5).toFixed(2) + 'L';
+  if (n >= 1e3) return '₹' + (n/1e3).toFixed(1) + 'K';
+  return '₹' + n.toFixed(0);
+};
+const fmtNum = (n) => n.toLocaleString('en-IN');
+
+// ---- KPIs ----
+document.getElementById('k-rev').textContent = fmtINR(DATA.kpis.total_revenue);
+document.getElementById('k-ord').textContent = fmtNum(DATA.kpis.total_orders);
+document.getElementById('k-cust').textContent = fmtNum(DATA.kpis.total_customers);
+document.getElementById('k-aov').textContent = fmtINR(DATA.kpis.avg_order_value);
+
+// ---- Ticker ----
+const tickerItems = [];
+DATA.category_revenue.labels.forEach((l,i)=>{
+  tickerItems.push(`<span>${l} <span class="up">${fmtINR(DATA.category_revenue.values[i])}</span></span>`);
+});
+DATA.region_revenue.labels.forEach((l,i)=>{
+  tickerItems.push(`<span>${l} <span class="up">${fmtINR(DATA.region_revenue.values[i])}</span></span>`);
+});
+tickerItems.push(`<span>CHURN RISK <span class="down">${(DATA.churn.churn_rate_overall*100).toFixed(1)}%</span></span>`);
+tickerItems.push(`<span>MODEL ROC-AUC <span class="up">${DATA.churn.metrics.roc_auc}</span></span>`);
+document.getElementById('ticker').innerHTML = tickerItems.join('') + tickerItems.join('');
+
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#9AA2B4';
+const gridColor = '#232937';
+const palette = ['#E3A857','#3FBFAD','#E1615A','#7C93E8','#B78AE0','#5C6478'];
+
+function baseGrid(axis){ return { grid:{ color: gridColor, drawTicks:false }, border:{ display:false } }; }
+
+// 1. Monthly revenue (line)
+new Chart(document.getElementById('chartRevenue'), {
+  type:'line',
+  data:{ labels: DATA.monthly_revenue.labels, datasets:[{
+    data: DATA.monthly_revenue.values, borderColor:'#E3A857', backgroundColor:'rgba(227,168,87,0.08)',
+    fill:true, tension:0.35, pointRadius:0, borderWidth:2
+  }]},
+  options:{ responsive:true, plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>fmtINR(c.raw)}}},
+    scales:{ x:{ ticks:{maxRotation:0, autoSkip:true, maxTicksLimit:8}, grid:{display:false}}, y:{ ticks:{callback:(v)=>fmtINR(v)}, ...baseGrid()} } }
+});
+
+// 2. Monthly orders (bar)
+new Chart(document.getElementById('chartOrders'), {
+  type:'bar',
+  data:{ labels: DATA.monthly_orders.labels, datasets:[{ data: DATA.monthly_orders.values, backgroundColor:'#3FBFAD' }]},
+  options:{ responsive:true, plugins:{legend:{display:false}},
+    scales:{ x:{ ticks:{maxRotation:0, autoSkip:true, maxTicksLimit:8}, grid:{display:false}}, y:{...baseGrid()} } }
+});
+
+// 3. Category revenue (horizontal bar)
+new Chart(document.getElementById('chartCatRev'), {
+  type:'bar',
+  data:{ labels: DATA.category_revenue.labels, datasets:[{ data: DATA.category_revenue.values, backgroundColor:'#E3A857' }]},
+  options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>fmtINR(c.raw)}}},
+    scales:{ x:{ ticks:{callback:(v)=>fmtINR(v)}, ...baseGrid()}, y:{ grid:{display:false} } } }
+});
+
+// 4. Category margin (horizontal bar)
+new Chart(document.getElementById('chartCatMargin'), {
+  type:'bar',
+  data:{ labels: DATA.category_margin.labels, datasets:[{ data: DATA.category_margin.values, backgroundColor:'#3FBFAD' }]},
+  options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>fmtINR(c.raw)}}},
+    scales:{ x:{ ticks:{callback:(v)=>fmtINR(v)}, ...baseGrid()}, y:{ grid:{display:false} } } }
+});
+
+// 5. Region revenue (doughnut)
+new Chart(document.getElementById('chartRegion'), {
+  type:'doughnut',
+  data:{ labels: DATA.region_revenue.labels, datasets:[{ data: DATA.region_revenue.values, backgroundColor: palette, borderColor:'#12161F', borderWidth:2 }]},
+  options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{boxWidth:10, padding:10, font:{size:10}} },
+    tooltip:{callbacks:{label:(c)=>c.label+': '+fmtINR(c.raw)}} } }
+});
+
+// 6. RFM segment counts (bar)
+new Chart(document.getElementById('chartRFM'), {
+  type:'bar',
+  data:{ labels: DATA.rfm_segments.labels, datasets:[{ data: DATA.rfm_segments.customers, backgroundColor: palette }]},
+  options:{ responsive:true, plugins:{legend:{display:false}},
+    scales:{ x:{ grid:{display:false}, ticks:{font:{size:10}} }, y:{...baseGrid()} } }
+});
+
+// Segment list (custom bars, sorted by monetary already)
+const maxMon = Math.max(...DATA.rfm_segments.avg_monetary);
+const segListEl = document.getElementById('segList');
+DATA.rfm_segments.labels.forEach((label, i)=>{
+  const val = DATA.rfm_segments.avg_monetary[i];
+  const pct = (val/maxMon*100).toFixed(0);
+  const color = palette[i % palette.length];
+  segListEl.innerHTML += `
+    <div class="seg-row">
+      <div class="seg-name">${label}</div>
+      <div class="seg-bar-track"><div class="seg-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+      <div class="seg-val">${fmtINR(val)}</div>
+    </div>`;
+});
+
+// 7. Cohort heatmap table
+const cohortTable = document.getElementById('cohortTable');
+const months = DATA.cohort_retention.months;
+let thead = '<tr><th>Cohort</th>' + months.map(m => `<th>M${m}</th>`).join('') + '</tr>';
+let rows = '';
+DATA.cohort_retention.cohorts.forEach((cohort, ri)=>{
+  let row = `<tr><td>${cohort}</td>`;
+  DATA.cohort_retention.matrix[ri].forEach((val)=>{
+    if (val === 0){ row += `<td style="background:#171C27;color:#5C6478;">–</td>`; return; }
+    // color scale gold intensity
+    const alpha = Math.min(val, 1);
+    const bg = `rgba(227,168,87,${0.15 + alpha*0.65})`;
+    row += `<td style="background:${bg};">${(val*100).toFixed(0)}%</td>`;
+  });
+  row += '</tr>';
+  rows += row;
+});
+cohortTable.innerHTML = thead + rows;
+
+// ---- Churn model metrics ----
+const metricGrid = document.getElementById('metricGrid');
+const m = DATA.churn.metrics;
+[['Accuracy', m.accuracy],['Precision', m.precision],['Recall', m.recall],['F1 Score', m.f1],['ROC-AUC', m.roc_auc]].forEach(([label,val])=>{
+  metricGrid.innerHTML += `<div class="metric-box"><div class="v">${val}</div><div class="l">${label}</div></div>`;
+});
+
+// ROC curve
+new Chart(document.getElementById('chartROC'), {
+  type:'line',
+  data:{ labels: DATA.churn.roc_curve.fpr.map(v=>v.toFixed(2)), datasets:[
+    { label:'Model', data: DATA.churn.roc_curve.tpr, borderColor:'#E3A857', backgroundColor:'rgba(227,168,87,0.08)', fill:true, pointRadius:0, tension:0.2, borderWidth:2 },
+    { label:'Random', data: DATA.churn.roc_curve.fpr, borderColor:'#5C6478', borderDash:[4,4], pointRadius:0, borderWidth:1 }
+  ]},
+  options:{ responsive:true, plugins:{legend:{display:true, labels:{boxWidth:10, font:{size:10}}}},
+    scales:{ x:{ title:{display:true, text:'False Positive Rate', font:{size:10}}, ...baseGrid()}, y:{ title:{display:true, text:'True Positive Rate', font:{size:10}}, ...baseGrid()} } }
+});
+
+// Feature importance
+new Chart(document.getElementById('chartFeat'), {
+  type:'bar',
+  data:{ labels: DATA.churn.feature_importance.labels, datasets:[{ data: DATA.churn.feature_importance.values, backgroundColor:'#3FBFAD' }]},
+  options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}},
+    scales:{ x:{...baseGrid()}, y:{ grid:{display:false}, ticks:{font:{size:9.5}} } } }
+});
+
+// Confusion matrix
+const cm = DATA.churn.confusion_matrix; // [[TN,FP],[FN,TP]]
+document.getElementById('confMatrix').innerHTML = `
+  <div></div><div class="lbl" style="text-align:center;">Pred: Stay</div><div class="lbl" style="text-align:center;">Pred: Churn</div>
+  <div class="lbl">Actual: Stay</div><div class="cell tn">${cm[0][0]}</div><div class="cell fp">${cm[0][1]}</div>
+  <div class="lbl">Actual: Churn</div><div class="cell fn">${cm[1][0]}</div><div class="cell tp">${cm[1][1]}</div>
+`;
+</script>
+
+</body>
+</html>
